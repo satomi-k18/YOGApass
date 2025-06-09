@@ -4,6 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/YOGApass/', // Important for GitHub Pages deployment
   plugins: [
     react(),
     VitePWA({
@@ -16,21 +17,21 @@ export default defineConfig({
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
-        scope: '/',
-        start_url: '/',
+        scope: '/YOGApass/', // Should match base
+        start_url: '/YOGApass/', // Should match base
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: 'pwa-192x192.png', // Ensure these icons exist in your public folder
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'pwa-512x512.png', // Ensure these icons exist in your public folder
             sizes: '512x512',
             type: 'image/png',
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'pwa-512x512.png', // Ensure these icons exist in your public folder
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
@@ -38,7 +39,7 @@ export default defineConfig({
         ],
       },
       devOptions: {
-        enabled: true
+        enabled: true // Enables PWA in development mode
       }
     })
   ],

@@ -3,7 +3,16 @@
 @tailwind utilities;
 
 body {
+<<<<<<< HEAD
   font-family: sans-serif;
   margin: 0;
+=======
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+>>>>>>> 02abac037f7bca105f4d710872bf81b9f6885958
   background-color: #f0f2f5; /* A light gray background */
 }
