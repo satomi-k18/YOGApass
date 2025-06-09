@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { get, set, del, keys, createStore } from 'idb-keyval';
 import { v4 as uuidv4 } from 'uuid';
 import { addMonths } from './utils';
@@ -20,65 +19,12 @@ const studentStore = createStore('students-db', 'students');
 
 // 新規購入
 export async function createPass({ name, note = '' }) {
-  const now = Date.now();
-  const student = {
-=======
-// src/db.js
-import { get, set, del, entries, clear } from 'idb-keyval';
-import { v4 as uuidv4 } from 'uuid';
-import { addMonths } from './utils';
-
-const STUDENT_STORE_NAME = 'students'; // We'll use a custom store for clarity if needed, or just prefix keys
-
-// Helper to use a specific store with idb-keyval if we decide to.
-// For now, idb-keyval uses a default store. We can manage multiple "tables" by prefixing keys.
-// const studentStore = new Store(STUDENT_STORE_NAME, STUDENT_STORE_NAME);
-
-/**
- * Retrieves all student records.
- * @returns {Promise<Array<object>>} - A promise that resolves to an array of student objects.
- */
-export async function getAllStudents() {
-  try {
-    const allEntries = await entries(); // Gets all entries from the default idb-keyval store
-    // Assuming student records are the primary data, or we can filter by a prefix if other data is stored.
-    // For simplicity, we assume only student data is stored directly with their ID as key.
-    return allEntries.map(([id, studentData]) => studentData); // id is already in studentData
-  } catch (error) {
-    console.error('Failed to get all students:', error);
-    return [];
-  }
-}
-
-/**
- * Retrieves a single student by ID.
- * @param {string} id - The ID of the student.
- * @returns {Promise<object|undefined>} - A promise that resolves to the student object or undefined if not found.
- */
-export async function getStudent(id) {
-  try {
-    return await get(id);
-  } catch (error) {
-    console.error(`Failed to get student ${id}:`, error);
-    return undefined;
-  }
-}
-
-/**
- * Creates a new student pass.
- * @param {object} data - The student data.
- * @param {string} data.name - The name of the student.
- * @param {string} [data.note=''] - Optional note.
- * @returns {Promise<object|null>} - The created student object or null on failure.
- */
-export async function createPass({ name, note = '' }) {
-  if (!name) {
+  if (!name || name.trim() === '') {
     console.error('Student name is required to create a pass.');
     return null;
   }
   const now = Date.now();
-  const newStudent = {
->>>>>>> 02abac037f7bca105f4d710872bf81b9f6885958
+  const student = {
     id: uuidv4(),
     name,
     tickets: 4,
@@ -87,97 +33,62 @@ export async function createPass({ name, note = '' }) {
     note,
     updatedAt: now,
   };
-<<<<<<< HEAD
-  await set(student.id, student, studentStore);
-  return student;
-}
-
-// 全生徒取得
-export async function getAllStudents() {
-  const studentIds = await keys(studentStore);
-  const students = await Promise.all(studentIds.map(id => get(id, studentStore)));
-  // Sort by purchasedAt descending (newest first)
-  return students.sort((a, b) => b.purchasedAt - a.purchasedAt);
-}
-
-// 特定の生徒取得
-export async function getStudent(id) {
-  return await get(id, studentStore);
-}
-
-// 受講時 -1
-export async function useTicket(id) {
-  const student = await get(id, studentStore);
-  if (student && student.tickets > 0) {
-    student.tickets -= 1;
-    student.updatedAt = Date.now();
-    await set(id, student, studentStore);
-    return student;
-  }
-  return student; // or throw error if no tickets/student not found
-}
-
-// 生徒情報更新 (汎用)
-export async function updateStudent(id, updates) {
-  const student = await get(id, studentStore);
-  if (student) {
-    const updatedStudent = { ...student, ...updates, updatedAt: Date.now() };
-    // Ensure expiresAt is recalculated if purchasedAt changes
-    if (updates.purchasedAt && updates.purchasedAt !== student.purchasedAt) {
-      updatedStudent.expiresAt = addMonths(updatedStudent.purchasedAt, 2);
-    }
-    await set(id, updatedStudent, studentStore);
-    return updatedStudent;
-  }
-  return null; // Or throw error
-}
-
-// 生徒削除
-export async function deleteStudent(id) {
-  await del(id, studentStore);
-}
-
-console.log('db.js loaded with functions');
-=======
   try {
-    await set(newStudent.id, newStudent);
-    return newStudent;
+    await set(student.id, student, studentStore);
+    return student;
   } catch (error) {
     console.error('Failed to create pass:', error);
     return null;
   }
 }
 
-/**
- * Records the use of a ticket for a student.
- * Decrements the ticket count if valid and updates the timestamp.
- * @param {string} id - The ID of the student.
- * @returns {Promise<object|null>} - The updated student object or null if not found/no tickets/expired.
- */
+// 全生徒取得
+export async function getAllStudents() {
+  try {
+    const studentIds = await keys(studentStore);
+    const students = await Promise.all(studentIds.map(id => get(id, studentStore)));
+    // Sort by purchasedAt descending (newest first)
+    return students.sort((a, b) => b.purchasedAt - a.purchasedAt);
+  } catch (error) {
+    console.error('Failed to get all students:', error);
+    return [];
+  }
+}
+
+// 特定の生徒取得
+export async function getStudent(id) {
+  try {
+    return await get(id, studentStore);
+  } catch (error) {
+    console.error(`Failed to get student ${id}:`, error);
+    return undefined;
+  }
+}
+
+// 受講時 -1
 export async function useTicket(id) {
   try {
-    const student = await get(id);
+    const student = await get(id, studentStore);
     if (!student) {
       console.warn(`Student with ID ${id} not found.`);
       return null;
     }
 
     const today = new Date();
-    today.setHours(0,0,0,0); // For comparing with expiresAt
+    today.setHours(0, 0, 0, 0);
 
     if (student.tickets <= 0) {
       console.warn(`Student ${student.name} has no tickets left.`);
-      // Potentially return student object to indicate status, or null for "action failed"
       return student; // Return student to allow UI to reflect "no tickets"
     }
-    if (student.expiresAt < today.getTime()) {
-      console.warn(`Student ${student.name}'s pass has expired.`);
+    if (typeof student.expiresAt !== 'number' || student.expiresAt < today.getTime()) {
+      console.warn(`Student ${student.name}'s pass has expired or expiry date is invalid.`);
       return student; // Return student to allow UI to reflect "expired"
     }
 
     student.tickets -= 1;
     student.updatedAt = Date.now();
-    await set(id, student);
+    await set(id, student, studentStore);
     return student;
   } catch (error) {
     console.error(`Failed to use ticket for student ${id}:`, error);
@@ -185,65 +96,35 @@ export async function useTicket(id) {
   }
 }
 
-/**
- * Updates an existing student record.
- * @param {string} id - The ID of the student to update.
- * @param {object} updatedData - An object containing the fields to update.
- * @returns {Promise<object|null>} - The updated student object or null on failure.
- */
-export async function updateStudent(id, updatedData) {
+// 生徒情報更新 (汎用)
+export async function updateStudent(id, updates) {
   try {
-    const student = await get(id);
-    if (!student) {
-      console.warn(`Student with ID ${id} not found for update.`);
-      return null;
+    const student = await get(id, studentStore);
+    if (student) {
+      const updatedStudent = { ...student, ...updates, updatedAt: Date.now() };
+      if (updates.purchasedAt && updates.purchasedAt !== student.purchasedAt) {
+        if (typeof updatedStudent.purchasedAt === 'number') {
+            updatedStudent.expiresAt = addMonths(updatedStudent.purchasedAt, 2);
+        } else {
+            console.error('Invalid purchasedAt date for recalculating expiry in updateStudent.');
+        }
+      }
+      await set(id, updatedStudent, studentStore);
+      return updatedStudent;
     }
-    const newStudentData = { ...student, ...updatedData, updatedAt: Date.now() };
-    // Ensure expiresAt is recalculated if purchasedAt changes
-    if (updatedData.purchasedAt && updatedData.purchasedAt !== student.purchasedAt) {
-        newStudentData.expiresAt = addMonths(newStudentData.purchasedAt, 2);
-    }
-
-    await set(id, newStudentData);
-    return newStudentData;
+    console.warn(`Student with ID ${id} not found for update.`);
+    return null;
   } catch (error) {
     console.error(`Failed to update student ${id}:`, error);
     return null;
   }
 }
 
-/**
- * Deletes a student record by ID.
- * @param {string} id - The ID of the student to delete.
- * @returns {Promise<boolean>} - True if deletion was successful, false otherwise.
- */
+// 生徒削除
 export async function deleteStudent(id) {
   try {
-    await del(id);
-    return true;
+    await del(id, studentStore);
   } catch (error) {
     console.error(`Failed to delete student ${id}:`, error);
-    return false;
   }
 }
-
-/**
- * Clears all student data from the store. (Use with caution)
- * @returns {Promise<void>}
- */
-export async function clearAllStudents() {
-    try {
-        // idb-keyval's clear() clears the entire default database.
-        // If we stored other things, we'd need to iterate and delete student-specific keys.
-        const students = await getAllStudents();
-        for (const student of students) {
-            await del(student.id);
-        }
-        // Or if we are sure only student data is in the default store:
-        // await clear();
-        console.log('All student data cleared.');
-    } catch (error) {
-        console.error('Failed to clear all student data:', error);
-    }
-}
->>>>>>> 02abac037f7bca105f4d710872bf81b9f6885958
